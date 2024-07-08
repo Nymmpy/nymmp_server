@@ -228,3 +228,4 @@ buildNumber.properties
 /build/reports/
 /build/test-results/test/
 application.properties
+.idea/dataSources.xml
