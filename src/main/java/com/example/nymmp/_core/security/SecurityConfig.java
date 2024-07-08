@@ -24,11 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserJPARepository userJPARepository;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    public SecurityConfig(UserJPARepository userJPARepository, AuthenticationConfiguration authenticationConfiguration) {
+        this.userJPARepository = userJPARepository;
+        this.authenticationConfiguration = authenticationConfiguration;
     }
 
     @Bean
@@ -37,7 +39,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager() throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -62,16 +64,21 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
 
-        http.addFilter(jwtAuthenticationFilter);
+        http.addFilter(jwtAuthenticationFilter());
         return http.build();
     }
 
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+        return new JwtAuthenticationFilter(authenticationManager(), userJPARepository);
+    }
+
+    @Bean
     public CorsConfigurationSource configurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.addAllowedOriginPattern("*");
-        //configuration.addAllowedOriginPattern("*");에서는 프론트엔드 주소로 바꿔줘야 CORS에러 안생김
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

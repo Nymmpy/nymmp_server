@@ -224,3 +224,6 @@ buildNumber.properties
 .ionide
 
 .gradle/
+/build/tmp/
+/build/reports/
+/build/test-results/test/
