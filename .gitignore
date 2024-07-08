@@ -226,3 +226,4 @@ buildNumber.properties
 .gradle/
 /build/tmp/
 /build/reports/
+/build/test-results/test/
