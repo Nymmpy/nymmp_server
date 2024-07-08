@@ -1,6 +1,5 @@
 package com.example.nymmp.model;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,9 +10,15 @@ public class Poll {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pollId;
 
-    private String question;
+    @OneToOne
+    @JoinColumn(name = "question_id", unique = true, nullable = false)
+    private Question question;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", unique = true, nullable = false)
     private Group group;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voter_id", nullable = false)
+    private User voter;
 }
