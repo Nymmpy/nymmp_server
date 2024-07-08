@@ -7,7 +7,7 @@ import com.example.nymmp.dto.user.UserRequest;
 import com.example.nymmp.dto.user.UserResponse;
 import com.example.nymmp.model.Group;
 import com.example.nymmp.model.User;
-import com.example.nymmp.repository.GroupRepository;
+import com.example.nymmp.repository.GroupJPARepository;
 import com.example.nymmp.repository.UserJPARepository;
 import com.example.nymmp.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ public class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private GroupRepository groupRepository;
+    private GroupJPARepository groupJPARepository;
 
     @InjectMocks
     private UserService userService;
@@ -76,24 +76,24 @@ public class UserServiceTest {
     @Test
     public void join_whenGroupDoesNotExist_throwsException404() {
         when(userJPARepository.findByEmail(joinDTO.getEmail())).thenReturn(Optional.empty());
-        when(groupRepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.empty());
+        when(groupJPARepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.empty());
 
         assertThrows(Exception404.class, () -> userService.join(joinDTO));
 
         verify(userJPARepository, times(1)).findByEmail(joinDTO.getEmail());
-        verify(groupRepository, times(1)).findByGroupName(joinDTO.getGroupName());
+        verify(groupJPARepository, times(1)).findByGroupName(joinDTO.getGroupName());
     }
 
     @Test
     public void join_whenEmailDoesNotExist_savesUser() {
         when(userJPARepository.findByEmail(joinDTO.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(joinDTO.getPassword())).thenReturn("encodedPassword");
-        when(groupRepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.of(group));
+        when(groupJPARepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.of(group));
 
         userService.join(joinDTO);
 
         verify(userJPARepository, times(1)).findByEmail(joinDTO.getEmail());
-        verify(groupRepository, times(1)).findByGroupName(joinDTO.getGroupName());
+        verify(groupJPARepository, times(1)).findByGroupName(joinDTO.getGroupName());
         verify(userJPARepository, times(1)).save(any(User.class));
     }
 

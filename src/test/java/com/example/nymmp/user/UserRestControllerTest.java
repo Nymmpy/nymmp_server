@@ -3,7 +3,7 @@ package com.example.nymmp.user;
 import com.example.nymmp.dto.user.UserRequest;
 import com.example.nymmp.model.Group;
 import com.example.nymmp.model.User;
-import com.example.nymmp.repository.GroupRepository;
+import com.example.nymmp.repository.GroupJPARepository;
 import com.example.nymmp.repository.UserJPARepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ public class UserRestControllerTest {
     private UserJPARepository userJPARepository;
 
     @Autowired
-    private GroupRepository groupRepository;
+    private GroupJPARepository groupJPARepository;
 
     @MockBean
     private PasswordEncoder passwordEncoder;
@@ -45,12 +45,12 @@ public class UserRestControllerTest {
     @BeforeEach
     public void setUp() {
         userJPARepository.deleteAll();
-        groupRepository.deleteAll();
+        groupJPARepository.deleteAll();
 
         group = Group.builder()
                 .groupName("USER")
                 .build();
-        groupRepository.save(group);
+        groupJPARepository.save(group);
 
         when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "{noop}" + invocation.getArgument(0));
         when(passwordEncoder.matches(anyString(), anyString())).thenAnswer(invocation -> {
