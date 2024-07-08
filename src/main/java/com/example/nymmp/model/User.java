@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @ToString
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -34,6 +34,10 @@ public class User {
         this.email = email;
         this.password = password;
         this.username = username;
+        this.group = group;
+    }
+
+    public void assignGroup(Group group) {
         this.group = group;
     }
 }
