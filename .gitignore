@@ -227,3 +227,5 @@ buildNumber.properties
 /build/tmp/
 /build/reports/
 /build/test-results/test/
+application.properties
+.idea/dataSources.xml
