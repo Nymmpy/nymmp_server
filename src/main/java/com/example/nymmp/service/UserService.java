@@ -9,7 +9,7 @@ import com.example.nymmp.dto.user.UserRequest;
 import com.example.nymmp.dto.user.UserResponse;
 import com.example.nymmp.model.Group;
 import com.example.nymmp.model.User;
-import com.example.nymmp.repository.GroupRepository;
+import com.example.nymmp.repository.GroupJPARepository;
 import com.example.nymmp.repository.UserJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ import java.util.Optional;
 public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserJPARepository userJPARepository;
-    private final GroupRepository groupRepository;
+    private final GroupJPARepository groupJPARepository;
 
     @Transactional
     public void join(UserRequest.JoinDTO requestDTO) {
@@ -32,7 +32,7 @@ public class UserService {
             throw new Exception403("이미 존재하는 이메일입니다.");
         }
         String encodedPassword = passwordEncoder.encode(requestDTO.getPassword());
-        Group group = groupRepository.findByGroupName(requestDTO.getGroupName())
+        Group group = groupJPARepository.findByGroupName(requestDTO.getGroupName())
                 .orElseThrow(() -> new Exception404("그룹을 찾을 수 없습니다: " + requestDTO.getGroupName()));
         User user = requestDTO.toEntity(encodedPassword, group);
         try {
