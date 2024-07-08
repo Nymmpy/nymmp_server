@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @ToString
-@Table(name = "groups")
+@Table(name = "`groups`")
 public class Group {
 
     @Id
