@@ -230,3 +230,4 @@ buildNumber.properties
 application.properties
 .idea/dataSources.xml
 .idea/modules/
+src/main/resources/
