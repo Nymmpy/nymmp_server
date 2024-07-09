@@ -40,9 +40,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
                 log.debug("디버그 : 토큰 있음");
                 DecodedJWT decodedJWT = JWTProvider.verify(jwt);
                 Long userId = decodedJWT.getClaim("id").asLong();
+                Long groupId = decodedJWT.getClaim("group").asLong();
                 User user = userJPARepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
                 CustomUserDetails myUserDetails = new CustomUserDetails(user);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(myUserDetails, myUserDetails.getPassword(), myUserDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(myUserDetails, myUserDetails.getPassword(), myUserDetails.getAuthorities());
+                authentication.setDetails(groupId); // Set groupId as details
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("디버그 : 인증 객체 만들어짐");
             } catch (SignatureVerificationException e) {
