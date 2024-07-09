@@ -46,6 +46,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+<<<<<<< Updated upstream
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .cors(cors -> cors.configurationSource(this.configurationSource()))
@@ -63,6 +64,29 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
+=======
+                .csrf().disable()
+                .headers().frameOptions().sameOrigin().and()
+                .cors().configurationSource(configurationSource()).and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .formLogin().disable()
+                .httpBasic().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint((request, response, authException) -> {
+                    log.warn("인증되지 않은 사용자가 자원에 접근하려 합니다 : " + authException.getMessage());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "인증되지 않았습니다");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    log.warn("권한이 없는 사용자가 자원에 접근하려 합니다 : " + accessDeniedException.getMessage());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "권한이 없습니다");
+                })
+                .and()
+                .authorizeRequests()
+                .antMatchers("/api/check", "/api/join", "/api/login","/kakao-login","/kakao-login/**","/kakao-login/callback","/signup/**","/signup").permitAll()
+                .anyRequest().permitAll()
+                .and()
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+>>>>>>> Stashed changes
 
         http.addFilter(jwtAuthenticationFilter());
         return http.build();
@@ -78,7 +102,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.addAllowedOriginPattern("http://localhost:58854");
+        configuration.addAllowedOriginPattern("http://localhost:*");
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

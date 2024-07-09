@@ -17,5 +17,7 @@ public interface UserJPARepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u JOIN FETCH u.group WHERE u.group.groupId = :groupId")
     List<User> findByGroupId(Long groupId);
+
+    Optional<User> findByKakaoId(Long kakaoId);
 }
 
