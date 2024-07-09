@@ -229,3 +229,4 @@ buildNumber.properties
 /build/test-results/test/
 application.properties
 .idea/dataSources.xml
+.idea/modules/Nymmp.main.iml
