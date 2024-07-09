@@ -11,6 +11,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/kakao-login")
 public class KakaoLoginController {
@@ -22,22 +24,41 @@ public class KakaoLoginController {
 
     @GetMapping
     @CrossOrigin(origins = "http://localhost:*")
-    public ResponseEntity<Void> redirectToKakao() {
-        String kakaoAuthUrl = kakaoLoginService.getAuthorizationUrl();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(UriComponentsBuilder.fromHttpUrl(kakaoAuthUrl).build().toUri());
+    public ResponseEntity<String> redirectToKakao() {
+        String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize";
 
-        logger.debug("Redirecting to Kakao with URL: {}", kakaoAuthUrl);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(kakaoAuthUrl)
+                .queryParam("client_id", kakaoLoginService.getClientId())
+                .queryParam("redirect_uri", kakaoLoginService.getRedirectUri())
+                .queryParam("response_type", "code");
 
-        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        String redirectUrl = builder.toUriString();
+
+        logger.debug("Redirecting to Kakao with URL: {}", redirectUrl);
+
+        return ResponseEntity.ok(redirectUrl);
     }
 
-    // 콜백 URL 처리
     @GetMapping("/callback")
-    public ResponseEntity<String> handleKakaoCallback(@RequestParam String code) {
+    @CrossOrigin(origins = "http://localhost:*")
+    public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
         try {
             String accessToken = kakaoLoginService.getAccessToken(code);
-            return ResponseEntity.ok(accessToken);
+            Map<String, Object> authResult = kakaoLoginService.userAuthentication(accessToken);
+
+            logger.debug("After Authentication :{}", authResult);
+
+            // 사용자 인증 결과에 따라 리디렉션
+            if ("authenticated".equals(authResult.get("status"))) {
+                String jwtToken = (String) authResult.get("token");
+                return ResponseEntity.ok(jwtToken); // JWT 토큰을 반환
+            } else {
+                // 회원가입 페이지로 리디렉션
+                logger.debug("register");
+                return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+                        .header(HttpHeaders.LOCATION, "http://localhost:51815/#/signup")
+                        .build();
+            }
         } catch (Exception e) {
             logger.error("Failed to handle Kakao callback", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

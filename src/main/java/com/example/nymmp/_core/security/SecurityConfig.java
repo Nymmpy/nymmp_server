@@ -30,7 +30,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
-    public SecurityConfig(UserJPARepository userJPARepository, AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(UserJPARepository userJPARepository,
+            AuthenticationConfiguration authenticationConfiguration) {
         this.userJPARepository = userJPARepository;
         this.authenticationConfiguration = authenticationConfiguration;
     }
@@ -48,6 +49,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                .cors(cors -> cors.configurationSource(this.configurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(formLogin -> formLogin.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            log.warn("인증되지 않은 사용자가 자원에 접근하려 합니다 : " + authException.getMessage());
+                            FilterResponseUtils.unAuthorized(response, new Exception401("인증되지 않았습니다"));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            log.warn("권한이 없는 사용자가 자원에 접근하려 합니다 : " + accessDeniedException.getMessage());
+                            FilterResponseUtils.forbidden(response, new Exception403("권한이 없습니다"));
+                        })
+                )
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
                 .csrf().disable()
                 .headers().frameOptions().sameOrigin().and()
                 .cors().configurationSource(configurationSource()).and()
@@ -65,11 +84,12 @@ public class SecurityConfig {
                 })
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/check", "/api/join", "/api/login").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/api/check", "/api/join", "/api/login","/kakao-login","/kakao-login/**","/kakao-login/callback","/signup/**","/signup").permitAll()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
+        http.addFilter(jwtAuthenticationFilter());
         return http.build();
     }
 
@@ -83,7 +103,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.addAllowedOriginPattern("http://localhost:58854");
+        configuration.addAllowedOriginPattern("http://localhost:*");
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
