@@ -30,6 +30,7 @@ public class UserController {
 
     @PostMapping("/join")
     public ResponseEntity<?> joinUser(@RequestBody @Valid UserRequest.JoinDTO requestDTO, Errors errors) {
+
         userService.join(requestDTO);
         return ResponseEntity.ok().body(ApiUtils.success(null));
     }
