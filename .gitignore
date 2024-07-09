@@ -230,3 +230,5 @@ buildNumber.properties
 application.properties
 .idea/dataSources.xml
 src/main/resources/
+.idea/sqldialects.xml
+.idea/misc.xml
