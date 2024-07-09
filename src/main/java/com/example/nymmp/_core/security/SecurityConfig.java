@@ -1,5 +1,8 @@
 package com.example.nymmp._core.security;
 
+import com.example.nymmp._core.exception.Exception401;
+import com.example.nymmp._core.exception.Exception403;
+import com.example.nymmp._core.utils.FilterResponseUtils;
 import com.example.nymmp.repository.UserJPARepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +34,7 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(UserJPARepository userJPARepository,
-            AuthenticationConfiguration authenticationConfiguration) {
+                          AuthenticationConfiguration authenticationConfiguration) {
         this.userJPARepository = userJPARepository;
         this.authenticationConfiguration = authenticationConfiguration;
     }
@@ -66,29 +69,8 @@ public class SecurityConfig {
                             FilterResponseUtils.forbidden(response, new Exception403("권한이 없습니다"));
                         })
                 )
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
-                .csrf().disable()
-                .headers().frameOptions().sameOrigin().and()
-                .cors().configurationSource(configurationSource()).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .exceptionHandling()
-                .authenticationEntryPoint((request, response, authException) -> {
-                    log.warn("인증되지 않은 사용자가 자원에 접근하려 합니다 : " + authException.getMessage());
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "인증되지 않았습니다");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    log.warn("권한이 없는 사용자가 자원에 접근하려 합니다 : " + accessDeniedException.getMessage());
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "권한이 없습니다");
-                })
-                .and()
-                .authorizeRequests()
-                .antMatchers("/api/check", "/api/join", "/api/login","/kakao-login","/kakao-login/**","/kakao-login/callback","/signup/**","/signup").permitAll()
-                .anyRequest().permitAll()
-                .and()
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
+                .authorizeHttpRequests(authorize -> authorize
+                        .antMatchers("*").permitAll());
         http.addFilter(jwtAuthenticationFilter());
         return http.build();
     }

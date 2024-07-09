@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -47,10 +48,11 @@ public class PollController {
     }
 
     @PostMapping("/vote")
-    public ResponseEntity<?> submitVote(@RequestBody PollVoteRequest voteRequest, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> submitVote(@RequestBody PollVoteRequest voteRequest, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
         Long groupId = JwtUtil.getGroupIdFromToken(token);
 
-        VoteResponse voteResponse = pollService.submitVote(voteRequest, groupId);
+        VoteResponse voteResponse = pollService.submitVote(voteRequest, groupId, request);
         return ResponseEntity.ok(voteResponse);
     }
 }

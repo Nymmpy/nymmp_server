@@ -24,7 +24,7 @@ public class User {
     @Column(length = 255, nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id")
     private Group group;
 

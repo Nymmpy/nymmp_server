@@ -3,9 +3,14 @@ package com.example.nymmp.service;
 import com.example.nymmp.dto.poll.*;
 import com.example.nymmp.model.*;
 import com.example.nymmp.repository.*;
+import com.example.nymmp._core.exception.Exception400;
+import com.example.nymmp._core.exception.Exception404;
+import com.example.nymmp._core.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,9 +35,10 @@ public class PollService {
     @Autowired
     private PollResultJPARepository pollResultRepository;
 
+    @Transactional(readOnly = true)
     public PollResponse getPollById(Long pollId, Long groupId) {
         // Poll 조회
-        Poll poll = pollRepository.findById(pollId).orElseThrow();
+        Poll poll = pollRepository.findById(pollId).orElseThrow(() -> new Exception404("Poll not found with id: " + pollId));
         Question question = poll.getQuestion();
         Long questionId = question.getQuestionId();
 
@@ -50,7 +56,7 @@ public class PollService {
         }
 
         // PollOption 조회 및 옵션 리스트 구성
-        PollOption pollOption = pollOptionRepository.findByPoll_PollId(pollId).orElseThrow();
+        PollOption pollOption = pollOptionRepository.findByPoll_PollId(pollId).orElseThrow(() -> new Exception404("PollOption not found for poll id: " + pollId));
         List<PollOptionResponse> options = Arrays.asList(
                 new PollOptionResponse(pollOption.getOption1().getUserId(), pollOption.getOption1().getUsername(), voteCountMap.getOrDefault(pollOption.getOption1().getUserId(), 0)),
                 new PollOptionResponse(pollOption.getOption2().getUserId(), pollOption.getOption2().getUsername(), voteCountMap.getOrDefault(pollOption.getOption2().getUserId(), 0)),
@@ -65,7 +71,7 @@ public class PollService {
                 .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
                 .limit(3)
                 .map(entry -> {
-                    User user = userRepository.findById(entry.getKey()).orElseThrow();
+                    User user = userRepository.findById(entry.getKey()).orElseThrow(() -> new Exception404("User not found with id: " + entry.getKey()));
                     return new TopVoterResponse(user.getUserId(), user.getUsername());
                 })
                 .collect(Collectors.toList());
@@ -73,15 +79,19 @@ public class PollService {
         return new PollResponse(poll.getPollId(), question.getQuestionText(), totalCount, options, topVoters);
     }
 
+    @Transactional
     public List<PollOptionResponse> shuffleOptions(Long pollId, Long groupId) {
         // 그룹 내의 모든 사용자 조회
         List<User> users = userRepository.findByGroupId(groupId);
+        if (users.size() < 4) {
+            throw new Exception400("Not enough users in the group to shuffle options");
+        }
         Collections.shuffle(users);
         List<User> selectedUsers = users.subList(0, 4);
 
         // PollOption 업데이트
-        Poll poll = pollRepository.findById(pollId).orElseThrow();
-        PollOption pollOption = pollOptionRepository.findByPoll_PollId(pollId).orElseThrow();
+        Poll poll = pollRepository.findById(pollId).orElseThrow(() -> new Exception404("Poll not found with id: " + pollId));
+        PollOption pollOption = pollOptionRepository.findByPoll_PollId(pollId).orElseThrow(() -> new Exception404("PollOption not found for poll id: " + pollId));
         pollOption.setOption1(selectedUsers.get(0));
         pollOption.setOption2(selectedUsers.get(1));
         pollOption.setOption3(selectedUsers.get(2));
@@ -109,23 +119,23 @@ public class PollService {
         );
     }
 
-    public VoteResponse submitVote(PollVoteRequest voteRequest, Long groupId) {
+    @Transactional
+    public VoteResponse submitVote(PollVoteRequest voteRequest, Long groupId, HttpServletRequest request) {
         // Poll 조회
-        Poll poll = pollRepository.findById(voteRequest.getPollId()).orElseThrow();
-        // User 조회 (투표한 사람)
-        User voter = userRepository.findById(voteRequest.getUserId()).orElseThrow();
+        Poll poll = pollRepository.findById(voteRequest.getPollId()).orElseThrow(() -> new Exception404("Poll not found with id: " + voteRequest.getPollId()));
+        // JWT 토큰에서 voter_id 추출
+        String token = request.getHeader("Authorization");
+        Long voterId = JwtUtil.getUserIdFromToken(token);
+        User voter = userRepository.findById(voterId).orElseThrow(() -> new Exception404("User not found with id: " + voterId));
 
         // User 조회 (투표에서 선택된 사람)
-        User selectedUser = userRepository.findById(voteRequest.getSelected()).orElseThrow();
-
-        // poll 에 쓰인 optionId추출
-        PollOption usedOption = pollOptionRepository.findByPoll_PollId(poll.getPollId()).orElseThrow();
+        User selectedUser = userRepository.findById(voteRequest.getSelected()).orElseThrow(() -> new Exception404("User not found with id: " + voteRequest.getSelected()));
 
         // 새로운 PollResult 생성 및 저장
         PollResult pollResult = new PollResult();
         pollResult.setPoll(poll);
         pollResult.setChoice(voter);
-        pollResult.setOption(usedOption); // 선택된 사용자를 옵션으로 설정
+        pollResult.setOption(pollOptionRepository.findByPoll_PollId(poll.getPollId()).orElseThrow(() -> new Exception404("PollOption not found for poll id: " + poll.getPollId())));
         pollResultRepository.save(pollResult);
 
         boolean isLast = voteRequest.getIsLast();
@@ -137,6 +147,7 @@ public class PollService {
         return new VoteResponse(true, "Vote successful", nextPollId);
     }
 
+    @Transactional
     public Long getNextPollId(Long userId, Long groupId) {
         // 해당 그룹과 사용자로 조회한 question_id를 제외한 나머지 question_id 중 가장 작은 값을 찾음
         List<PollResult> userResults = pollResultRepository.findByGroupIdAndUserId(groupId, userId);
@@ -153,7 +164,8 @@ public class PollService {
             // 새로운 Poll 생성 및 저장
             Poll newPoll = new Poll();
             newPoll.setQuestion(nextQuestion.get());
-            newPoll.setGroup(groupRepository.findById(groupId).orElseThrow());
+            newPoll.setGroup(groupRepository.findById(groupId).orElseThrow(() -> new Exception404("Group not found with id: " + groupId)));
+            newPoll.setVoter(userRepository.findById(userId).orElseThrow(() -> new Exception404("User not found with id: " + userId)));
             pollRepository.save(newPoll);
 
             // PollOption 생성 및 저장
@@ -172,6 +184,6 @@ public class PollService {
             return newPoll.getPollId();
         }
 
-        return null; // 더 이상 투표할 질문이 없을 때 처리
+        throw new Exception404("No more questions available for polling");
     }
 }
