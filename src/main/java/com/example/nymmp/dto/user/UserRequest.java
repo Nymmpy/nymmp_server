@@ -28,12 +28,15 @@ public class UserRequest {
 
         private Long groupId;
 
+        private Long kakaoId;
+
         public User toEntity(String encodedPassword, Group group) {
             return User.builder()
                     .email(email)
                     .password(encodedPassword)
                     .username(name)
                     .group(group)
+                    .kakaoId(kakaoId)
                     .build();
         }
     }

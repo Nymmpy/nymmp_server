@@ -67,6 +67,8 @@ public class KakaoLoginService {
         RestTemplate restTemplate = new RestTemplate();
         String requestUrl = "https://kapi.kakao.com/v2/user/me";
 
+        logger.debug("rightafter auth");
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
         headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");

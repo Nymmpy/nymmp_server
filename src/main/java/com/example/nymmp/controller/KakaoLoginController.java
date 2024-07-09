@@ -43,6 +43,9 @@ public class KakaoLoginController {
     @CrossOrigin(origins = "http://localhost:*")
     public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
         try {
+            logger.debug("Before Authentication :{}",code);
+
+
             String accessToken = kakaoLoginService.getAccessToken(code);
             Map<String, Object> authResult = kakaoLoginService.userAuthentication(accessToken);
 
@@ -56,7 +59,7 @@ public class KakaoLoginController {
                 // 회원가입 페이지로 리디렉션
                 logger.debug("register");
                 return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                        .header(HttpHeaders.LOCATION, "http://localhost:51815/#/signup")
+                        .header(HttpHeaders.LOCATION, "http://localhost:54075/#/signup")
                         .build();
             }
         } catch (Exception e) {
