@@ -28,16 +28,21 @@ public class User {
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @Column(columnDefinition = "BIGINT")
+    private Long kakaoId;
+
     @Builder
-    public User(Long userId, String email, String password, String username, Group group) {
+    public User(Long userId, String email, String password, String username, Group group, Long kakaoId) {
         this.userId = userId;
         this.email = email;
         this.password = password;
         this.username = username;
         this.group = group;
+        this.kakaoId = kakaoId;
     }
 
     public void assignGroup(Group group) {
         this.group = group;
     }
+
 }

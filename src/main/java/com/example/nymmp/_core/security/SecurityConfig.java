@@ -30,7 +30,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
-    public SecurityConfig(UserJPARepository userJPARepository, AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(UserJPARepository userJPARepository,
+            AuthenticationConfiguration authenticationConfiguration) {
         this.userJPARepository = userJPARepository;
         this.authenticationConfiguration = authenticationConfiguration;
     }
@@ -65,11 +66,12 @@ public class SecurityConfig {
                 })
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/check", "/api/join", "/api/login").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/api/check", "/api/join", "/api/login", "/kakao-login", "/kakao-login/**",
+                        "/kakao-login/callback", "/signup/**", "/signup")
+                .permitAll()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -83,7 +85,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.addAllowedOriginPattern("http://localhost:58854");
+        configuration.addAllowedOriginPattern("http://localhost:*");
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
