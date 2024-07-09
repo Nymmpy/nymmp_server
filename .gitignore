@@ -231,3 +231,4 @@ application.properties
 .idea/dataSources.xml
 .idea/modules/
 src/main/resources/
+.idea/sqldialects.xml
