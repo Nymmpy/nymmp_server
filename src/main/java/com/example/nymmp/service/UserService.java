@@ -32,8 +32,8 @@ public class UserService {
             throw new Exception403("이미 존재하는 이메일입니다.");
         }
         String encodedPassword = passwordEncoder.encode(requestDTO.getPassword());
-        Group group = groupJPARepository.findByGroupName(requestDTO.getGroupName())
-                .orElseThrow(() -> new Exception404("그룹을 찾을 수 없습니다: " + requestDTO.getGroupName()));
+        Group group = groupJPARepository.findById(requestDTO.getGroupId())
+                .orElseThrow(() -> new Exception404("그룹을 찾을 수 없습니다: " + requestDTO.getGroupId()));
         User user = requestDTO.toEntity(encodedPassword, group);
         try {
             userJPARepository.save(user);

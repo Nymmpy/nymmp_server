@@ -22,7 +22,7 @@ public class JWTProvider {
                 .withSubject(user.getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXP))
                 .withClaim("id", user.getUserId())
-                .withClaim("group", user.getGroup().getGroupName())
+                .withClaim("group", user.getGroup().getGroupId())
                 .sign(Algorithm.HMAC512(SECRET));
     }
 

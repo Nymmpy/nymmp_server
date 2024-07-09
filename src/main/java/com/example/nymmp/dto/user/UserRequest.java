@@ -26,7 +26,7 @@ public class UserRequest {
         @Size(min = 2, max = 20, message = "Name must be between 2 and 20 characters")
         private String name;
 
-        private String groupName;
+        private Long groupId;
 
         public User toEntity(String encodedPassword, Group group) {
             return User.builder()
