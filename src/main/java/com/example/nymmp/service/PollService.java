@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PollService {
+
     @Autowired
     private PollJPARepository pollRepository;
 
@@ -72,7 +73,6 @@ public class PollService {
         return new PollResponse(poll.getPollId(), question.getQuestionText(), totalCount, options, topVoters);
     }
 
-
     public List<PollOptionResponse> shuffleOptions(Long pollId, Long groupId) {
         // 그룹 내의 모든 사용자 조회
         List<User> users = userRepository.findByGroupId(groupId);
@@ -108,7 +108,8 @@ public class PollService {
                 new PollOptionResponse(selectedUsers.get(3).getUserId(), selectedUsers.get(3).getUsername(), voteCountMap.getOrDefault(selectedUsers.get(3).getUserId(), 0))
         );
     }
-    public VoteResponse submitVote(PollVoteRequest voteRequest) {
+
+    public VoteResponse submitVote(PollVoteRequest voteRequest, Long groupId) {
         // Poll 조회
         Poll poll = pollRepository.findById(voteRequest.getPollId()).orElseThrow();
         // User 조회 (투표한 사람)
@@ -135,7 +136,6 @@ public class PollService {
 
         return new VoteResponse(true, "Vote successful", nextPollId);
     }
-
 
     public Long getNextPollId(Long userId, Long groupId) {
         // 해당 그룹과 사용자로 조회한 question_id를 제외한 나머지 question_id 중 가장 작은 값을 찾음
@@ -174,6 +174,4 @@ public class PollService {
 
         return null; // 더 이상 투표할 질문이 없을 때 처리
     }
-
-
 }
