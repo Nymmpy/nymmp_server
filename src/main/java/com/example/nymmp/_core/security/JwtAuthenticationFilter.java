@@ -5,10 +5,6 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.nymmp.model.User;
 import com.example.nymmp.repository.UserJPARepository;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +13,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
@@ -40,9 +40,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
                 log.debug("디버그 : 토큰 있음");
                 DecodedJWT decodedJWT = JWTProvider.verify(jwt);
                 Long userId = decodedJWT.getClaim("id").asLong();
+                Long groupId = decodedJWT.getClaim("group").asLong();
                 User user = userJPARepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
                 CustomUserDetails myUserDetails = new CustomUserDetails(user);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(myUserDetails, myUserDetails.getPassword(), myUserDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(myUserDetails, myUserDetails.getPassword(), myUserDetails.getAuthorities());
+                authentication.setDetails(groupId); // Set groupId as details
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("디버그 : 인증 객체 만들어짐");
             } catch (SignatureVerificationException e) {
