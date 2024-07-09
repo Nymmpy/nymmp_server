@@ -65,7 +65,7 @@ public class UserRestControllerTest {
         UserRequest.EmailCheckDTO emailCheckDTO = new UserRequest.EmailCheckDTO();
         emailCheckDTO.setEmail("newuser@example.com");
 
-        mockMvc.perform(post("/api/user/check")
+        mockMvc.perform(post("/home/check")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emailCheckDTO)))
                 .andExpect(status().isOk())
@@ -80,7 +80,7 @@ public class UserRestControllerTest {
         joinDTO.setName("New User");
         joinDTO.setGroupName("USER");
 
-        mockMvc.perform(post("/api/user/join")
+        mockMvc.perform(post("/home/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(joinDTO)))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ public class UserRestControllerTest {
         User existingUser = joinDTO.toEntity("{noop}Password1!", group);
         userJPARepository.save(existingUser);
 
-        mockMvc.perform(post("/api/user/join")
+        mockMvc.perform(post("/home/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(joinDTO)))
                 .andExpect(status().isForbidden())
@@ -120,7 +120,7 @@ public class UserRestControllerTest {
         loginDTO.setEmail("test@example.com");
         loginDTO.setPassword("Password1!");
 
-        mockMvc.perform(post("/api/user/login")
+        mockMvc.perform(post("/home/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDTO)))
                 .andExpect(status().isOk())
@@ -134,7 +134,7 @@ public class UserRestControllerTest {
         loginDTO.setEmail("nonexistent@example.com");
         loginDTO.setPassword("Password1!");
 
-        mockMvc.perform(post("/api/user/login")
+        mockMvc.perform(post("/home/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDTO)))
                 .andExpect(status().isNotFound())
@@ -156,7 +156,7 @@ public class UserRestControllerTest {
         loginDTO.setEmail("test@example.com");
         loginDTO.setPassword("WrongPassword!");
 
-        mockMvc.perform(post("/api/user/login")
+        mockMvc.perform(post("/home/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDTO)))
                 .andExpect(status().isBadRequest())
