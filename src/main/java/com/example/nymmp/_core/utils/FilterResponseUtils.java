@@ -3,7 +3,7 @@ package com.example.nymmp._core.utils;
 import com.example.nymmp._core.exception.Exception401;
 import com.example.nymmp._core.exception.Exception403;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
