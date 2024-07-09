@@ -232,3 +232,4 @@ application.properties
 src/main/resources/
 .idea/sqldialects.xml
 .idea/misc.xml
+.idea/modules/Nymmp.main.iml
