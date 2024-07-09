@@ -233,3 +233,7 @@ src/main/resources/
 .idea/sqldialects.xml
 .idea/misc.xml
 .idea/modules/Nymmp.main.iml
+.idea/modules.xml
+.idea/modules/Nymmp.iml
+.idea/modules.xml
+.idea/modules/Nymmp.test.iml
