@@ -49,7 +49,7 @@ public class UserServiceTest {
         joinDTO.setEmail("test@example.com");
         joinDTO.setPassword("Password1!");
         joinDTO.setName("Test User");
-        joinDTO.setGroupName("USER");
+        joinDTO.setGroupId(Long.valueOf("1"));
 
         loginDTO = new UserRequest.LoginDTO();
         loginDTO.setEmail("test@example.com");
@@ -76,24 +76,24 @@ public class UserServiceTest {
     @Test
     public void join_whenGroupDoesNotExist_throwsException404() {
         when(userJPARepository.findByEmail(joinDTO.getEmail())).thenReturn(Optional.empty());
-        when(groupJPARepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.empty());
+        when(groupJPARepository.findByGroupName(String.valueOf(joinDTO.getGroupId()))).thenReturn(Optional.empty());
 
         assertThrows(Exception404.class, () -> userService.join(joinDTO));
 
         verify(userJPARepository, times(1)).findByEmail(joinDTO.getEmail());
-        verify(groupJPARepository, times(1)).findByGroupName(joinDTO.getGroupName());
+        verify(groupJPARepository, times(1)).findByGroupName(String.valueOf(joinDTO.getGroupId()));
     }
 
     @Test
     public void join_whenEmailDoesNotExist_savesUser() {
         when(userJPARepository.findByEmail(joinDTO.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(joinDTO.getPassword())).thenReturn("encodedPassword");
-        when(groupJPARepository.findByGroupName(joinDTO.getGroupName())).thenReturn(Optional.of(group));
+        when(groupJPARepository.findByGroupName(String.valueOf(joinDTO.getGroupId()))).thenReturn(Optional.of(group));
 
         userService.join(joinDTO);
 
         verify(userJPARepository, times(1)).findByEmail(joinDTO.getEmail());
-        verify(groupJPARepository, times(1)).findByGroupName(joinDTO.getGroupName());
+        verify(groupJPARepository, times(1)).findByGroupName(String.valueOf(joinDTO.getGroupId()));
         verify(userJPARepository, times(1)).save(any(User.class));
     }
 

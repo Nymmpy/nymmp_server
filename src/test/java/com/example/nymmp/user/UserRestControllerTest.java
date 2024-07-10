@@ -48,7 +48,7 @@ public class UserRestControllerTest {
         groupJPARepository.deleteAll();
 
         group = Group.builder()
-                .groupName("USER")
+                .groupId(Long.valueOf("1"))
                 .build();
         groupJPARepository.save(group);
 
@@ -78,7 +78,7 @@ public class UserRestControllerTest {
         joinDTO.setEmail("newuser@example.com");
         joinDTO.setPassword("Password1!");
         joinDTO.setName("New User");
-        joinDTO.setGroupName("USER");
+        joinDTO.setGroupId(Long.valueOf("1"));
 
         mockMvc.perform(post("/home/join")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +93,7 @@ public class UserRestControllerTest {
         joinDTO.setEmail("test@example.com");
         joinDTO.setPassword("Password1!");
         joinDTO.setName("Test User");
-        joinDTO.setGroupName("USER");
+        joinDTO.setGroupId(Long.valueOf("1"));
 
         User existingUser = joinDTO.toEntity("{noop}Password1!", group);
         userJPARepository.save(existingUser);
@@ -111,7 +111,7 @@ public class UserRestControllerTest {
         joinDTO.setEmail("test@example.com");
         joinDTO.setPassword("Password1!");
         joinDTO.setName("Test User");
-        joinDTO.setGroupName("USER");
+        joinDTO.setGroupId(Long.valueOf("1"));
 
         User existingUser = joinDTO.toEntity("{noop}Password1!", group);
         userJPARepository.save(existingUser);
@@ -147,7 +147,7 @@ public class UserRestControllerTest {
         joinDTO.setEmail("test@example.com");
         joinDTO.setPassword("Password1!");
         joinDTO.setName("Test User");
-        joinDTO.setGroupName("USER");
+        joinDTO.setGroupId(Long.valueOf("1"));
 
         User existingUser = joinDTO.toEntity("{noop}Password1!", group);
         userJPARepository.save(existingUser);
