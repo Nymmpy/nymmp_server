@@ -55,4 +55,11 @@ public class PollController {
         VoteResponse voteResponse = pollService.submitVote(voteRequest, groupId, request);
         return ResponseEntity.ok(voteResponse);
     }
+    @GetMapping("/result")
+    public ResponseEntity<?> getRandomPollResult(@RequestHeader("Authorization") String token) {
+        Long groupId = JwtUtil.getGroupIdFromToken(token);
+        PollResultResponse pollResultResponse = pollService.getRandomPollResult(groupId);
+        return ResponseEntity.ok(pollResultResponse);
+    }
+
 }

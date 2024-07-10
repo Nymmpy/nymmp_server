@@ -4,17 +4,17 @@ import java.util.List;
 
 public class PollResponse {
     private Long pollId;
+    private Long questionId;
     private String question;
     private int totalCount;
     private List<PollOptionResponse> options;
-    private List<TopVoterResponse> topVoters;
 
-    public PollResponse(Long pollId, String question, int totalCount, List<PollOptionResponse> options, List<TopVoterResponse> topVoters) {
+    public PollResponse(Long pollId, Long questionId,String question, int totalCount, List<PollOptionResponse> options) {
         this.pollId = pollId;
+        this.questionId = questionId;
         this.question = question;
         this.totalCount = totalCount;
         this.options = options;
-        this.topVoters = topVoters;
     }
 
     public Long getPollId() {
@@ -49,11 +49,12 @@ public class PollResponse {
         this.options = options;
     }
 
-    public List<TopVoterResponse> getTopVoters() {
-        return topVoters;
+    public Long getQuestionId() {
+        return questionId;
     }
 
-    public void setTopVoters(List<TopVoterResponse> topVoters) {
-        this.topVoters = topVoters;
+    public PollResponse setQuestionId(Long questionId) {
+        this.questionId = questionId;
+        return this;
     }
 }

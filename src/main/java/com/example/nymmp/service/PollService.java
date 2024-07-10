@@ -63,20 +63,7 @@ public class PollService {
                 new PollOptionResponse(pollOption.getOption3().getUserId(), pollOption.getOption3().getUsername(), voteCountMap.getOrDefault(pollOption.getOption3().getUserId(), 0)),
                 new PollOptionResponse(pollOption.getOption4().getUserId(), pollOption.getOption4().getUsername(), voteCountMap.getOrDefault(pollOption.getOption4().getUserId(), 0))
         );
-
-        // 그룹 내에서 가장 많은 득표를 한 사용자 3명 조회
-        List<TopVoterResponse> topVoters = pollResults.stream()
-                .collect(Collectors.groupingBy(result -> result.getChoice().getUserId(), Collectors.counting()))
-                .entrySet().stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-                .limit(3)
-                .map(entry -> {
-                    User user = userRepository.findById(entry.getKey()).orElseThrow(() -> new Exception404("User not found with id: " + entry.getKey()));
-                    return new TopVoterResponse(user.getUserId(), user.getUsername());
-                })
-                .collect(Collectors.toList());
-
-        return new PollResponse(poll.getPollId(), question.getQuestionText(), totalCount, options, topVoters);
+        return new PollResponse(poll.getPollId(),questionId,question.getQuestionText(), totalCount, options);
     }
 
     @Transactional
@@ -147,6 +134,7 @@ public class PollService {
         return new VoteResponse(true, "Vote successful", nextPollId);
     }
 
+
     @Transactional
     public Long getNextPollId(Long userId, Long groupId) {
         // 해당 그룹과 사용자로 조회한 question_id를 제외한 나머지 question_id 중 가장 작은 값을 찾음
@@ -185,5 +173,44 @@ public class PollService {
         }
 
         throw new Exception404("No more questions available for polling");
+    }
+
+    @Transactional
+    public PollResultResponse getRandomPollResult(Long groupId) {
+        // 그룹 내의 모든 설문 조회
+        List<Poll> polls = pollRepository.findByGroup_GroupId(groupId);
+        if (polls.isEmpty()) {
+            throw new Exception404("No polls found for the group id: " + groupId);
+        }
+
+        // 랜덤으로 설문 선택
+        Poll randomPoll = polls.get(new Random().nextInt(polls.size()));
+        Long pollId = randomPoll.getPollId();
+
+        // Poll 조회
+        PollResponse pollResponse = getPollById(pollId, groupId);
+
+        // 해당 설문의 Top Voters 조회
+        List<TopVoterResponse> topVoters = getTopVoters(groupId, pollResponse.getQuestionId());
+
+        return new PollResultResponse(pollResponse, topVoters);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TopVoterResponse> getTopVoters(Long groupId, Long questionId) {
+        // 해당 그룹과 질문에 대한 PollResult 조회
+        List<PollResult> pollResults = pollResultRepository.findByGroupIdAndQuestionId(groupId, questionId);
+
+        // 그룹 내에서 가장 많은 득표를 한 사용자 3명 조회
+        return pollResults.stream()
+                .collect(Collectors.groupingBy(result -> result.getChoice().getUserId(), Collectors.counting()))
+                .entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(3)
+                .map(entry -> {
+                    User user = userRepository.findById(entry.getKey()).orElseThrow(() -> new Exception404("User not found with id: " + entry.getKey()));
+                    return new TopVoterResponse(user.getUserId(), user.getUsername());
+                })
+                .collect(Collectors.toList());
     }
 }
