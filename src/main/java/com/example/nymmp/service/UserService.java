@@ -61,4 +61,8 @@ public class UserService {
             throw new Exception403("이미 존재하는 이메일입니다: " + email);
         }
     }
+    public User getUserById(Long userId) {
+        return userJPARepository.findById(userId).orElseThrow(() -> new Exception404("사용자를 찾을 수 없습니다: " + userId));
+    }
+
 }

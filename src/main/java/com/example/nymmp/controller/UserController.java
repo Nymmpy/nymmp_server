@@ -1,17 +1,16 @@
 package com.example.nymmp.controller;
 
 import com.example.nymmp._core.security.JWTProvider;
+import com.example.nymmp._core.security.JwtUtil;
 import com.example.nymmp._core.utils.ApiUtils;
 import com.example.nymmp.dto.user.UserRequest;
 import com.example.nymmp.dto.user.UserResponse;
+import com.example.nymmp.model.User;
 import com.example.nymmp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -40,4 +39,14 @@ public class UserController {
         UserResponse.LoginResponse response = userService.login(requestDTO);
         return ResponseEntity.ok().header(JWTProvider.HEADER, response.getJwtToken()).body(ApiUtils.success(null));
     }
+
+    @GetMapping("/mypage")
+    public ResponseEntity<?> getMyPage(@RequestHeader("Authorization") String token) {
+        Long userId = JwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        User user = userService.getUserById(userId);
+        UserResponse.MyPage response = new UserResponse.MyPage(user);
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+
 }

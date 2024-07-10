@@ -30,4 +30,20 @@ public class UserResponse {
             this.redirectUrl = redirectUrl;
         }
     }
+
+    @Setter
+    @Getter
+    public static class MyPage{
+        private long userId;
+        private String username;
+        private long groupId;
+        private String groupName;
+
+        public MyPage(User user){
+            this.userId = user.getUserId();
+            this.username = user.getUsername();
+            this.groupId = user.getGroup().getGroupId();
+            this.groupName = user.getGroup().getGroupName();
+        }
+    }
 }
